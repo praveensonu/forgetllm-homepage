@@ -1,0 +1,712 @@
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  BrainCircuit,
+  Check,
+  CheckCircle2,
+  Cpu,
+  Database,
+  FileJson,
+  FlaskConical,
+  GitBranch,
+  Layers3,
+  Rocket,
+  Settings2,
+  ShieldCheck,
+  SlidersHorizontal,
+  UploadCloud,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import copyrightIllustration from "./assets/copyright.svg";
+import harmfulKnowledgeIllustration from "./assets/harmful_knowledge.svg";
+import heroIllustration from "./assets/llm-unlearning-hero.png";
+import memorizationIllustration from "./assets/memorization.svg";
+import outdatedKnowledgeIllustration from "./assets/outdated_knowledge.svg";
+import privateDataIllustration from "./assets/private_data.svg";
+
+type WorkflowStep = {
+  title: string;
+  kicker: string;
+  detail: string;
+  items: string[];
+  icon: LucideIcon;
+};
+
+type Feature = {
+  title: string;
+  text: string;
+  icon: LucideIcon;
+};
+
+const workflowSteps: WorkflowStep[] = [
+  {
+    title: "Select a model",
+    kicker: "Hugging Face or local checkpoints",
+    detail:
+      "Start from a familiar model source and choose the unlearning mode that matches the experiment.",
+    items: ["Full model unlearning", "LoRA fine-tuning", "Adapter-based unlearning"],
+    icon: BrainCircuit,
+  },
+  {
+    title: "Upload forget data",
+    kicker: "CSV, JSON, JSONL, Parquet",
+    detail:
+      "Provide examples that represent the knowledge the model should remove from its behavior.",
+    items: ["Automatic QA validation", "Schema checks", "Dataset processing"],
+    icon: UploadCloud,
+  },
+  {
+    title: "Balance with retain data",
+    kicker: "Optional utility preservation",
+    detail:
+      "Retain datasets help avoid collateral damage while targeted knowledge is unlearned.",
+    items: ["Capability retention", "Reduced regressions", "Forget + retain runs"],
+    icon: ShieldCheck,
+  },
+  {
+    title: "Configure unlearning",
+    kicker: "Validated before launch",
+    detail:
+      "Set the hyperparameters and GPU target through a simple, reproducible configuration flow.",
+    items: ["Learning rate", "Batch size", "Context length", "LoRA settings"],
+    icon: SlidersHorizontal,
+  },
+  {
+    title: "Launch unlearning",
+    kicker: "No manual scripting",
+    detail:
+      "The platform loads the model, prepares data, runs the workflow, and saves the resulting checkpoint.",
+    items: ["Workflow selection", "GPU execution", "Checkpoint export"],
+    icon: Rocket,
+  },
+];
+
+const features: Feature[] = [
+  {
+    title: "Hugging Face support",
+    text: "Bring compatible models or local checkpoints into one repeatable experiment surface.",
+    icon: BrainCircuit,
+  },
+  {
+    title: "LoRA and adapters",
+    text: "Run efficient unlearning workflows without committing to full-model rebuilds.",
+    icon: Layers3,
+  },
+  {
+    title: "Forget-only or retain-aware",
+    text: "Compare direct forgetting with utility-preserving retain data in the same platform.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Dataset processing",
+    text: "Validate simple QA datasets and convert supported file formats into unlearning-ready inputs.",
+    icon: FileJson,
+  },
+  {
+    title: "GPU validation",
+    text: "Select compute targets with automatic checks before the unlearning job starts.",
+    icon: Cpu,
+  },
+  {
+    title: "Evaluation ready",
+    text: "Extend the pipeline with benchmarks, loss functions, and model comparison reports.",
+    icon: FlaskConical,
+  },
+];
+
+const architecture = [
+  { name: "Model Management", icon: BrainCircuit },
+  { name: "Dataset Processing", icon: Database },
+  { name: "Unlearning Configuration", icon: Settings2 },
+  { name: "Experiment Orchestration", icon: GitBranch },
+  { name: "Unlearning Algorithms", icon: FlaskConical },
+];
+
+const roles = [
+  {
+    name: "Researchers",
+    text: "Experiment with new unlearning algorithms and benchmark performance.",
+  },
+  {
+    name: "ML Engineers",
+    text: "Build production-ready workflows for machine unlearning.",
+  },
+  {
+    name: "Academic Labs",
+    text: "Run reproducible unlearning experiments across multiple projects.",
+  },
+  {
+    name: "Organizations",
+    text: "Remove unwanted information without rebuilding models from scratch.",
+  },
+];
+
+const roadmap = [
+  "Real-time unlearning monitoring",
+  "Experiment dashboard",
+  "Evaluation benchmarks",
+  "Model comparison reports",
+  "Job queue management",
+  "Multi-GPU support",
+  "Automated utility and forgetting metrics",
+];
+
+const complianceTopics = [
+  {
+    title: "Privacy & Data Removal",
+    text:
+      "Regulations such as the GDPR highlight the importance of data removal and user privacy. ForgetLLM enables controlled unlearning workflows that can support investigations into how trained models may be updated when information needs to be removed.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Copyright & Data Governance",
+    text:
+      "Source data may later become subject to licensing changes, ownership disputes, or policy updates. ForgetLLM provides a framework for evaluating selective knowledge removal strategies and their impact on model performance.",
+    icon: Database,
+  },
+  {
+    title: "Responsible AI Development",
+    text:
+      "ForgetLLM helps researchers and organizations study targeted knowledge removal, evaluate utility-forgetting trade-offs, build reproducible experiments, and support AI governance efforts.",
+    icon: FlaskConical,
+  },
+];
+
+const responsibleAIPoints = [
+  "Study targeted knowledge removal",
+  "Evaluate utility-forgetting trade-offs",
+  "Build reproducible unlearning experiments",
+  "Support AI governance and risk management efforts",
+];
+
+const heroTitle = "Forget what doesn't matter. Keep what does.";
+
+const whyReasons = [
+  {
+    title: "Sensitive or private data",
+    text: "Remove information that should not remain embedded in model behavior.",
+    image: privateDataIllustration,
+    alt: "Minimal illustration representing private data removal",
+  },
+  {
+    title: "Copyrighted content",
+    text: "Study selective removal when ownership, licenses, or usage policies change.",
+    image: copyrightIllustration,
+    alt: "Minimal illustration representing copyrighted content governance",
+  },
+  {
+    title: "Outdated knowledge",
+    text: "Update models when facts, policies, or domain assumptions become stale.",
+    image: outdatedKnowledgeIllustration,
+    alt: "Minimal illustration representing outdated model knowledge",
+  },
+  {
+    title: "Harmful or incorrect information",
+    text: "Evaluate interventions for unsafe, false, or unwanted model responses.",
+    image: harmfulKnowledgeIllustration,
+    alt: "Minimal illustration representing harmful knowledge removal",
+  },
+  {
+    title: "Dataset-specific memorization",
+    text: "Reduce memorized artifacts while preserving useful general capabilities.",
+    image: memorizationIllustration,
+    alt: "Minimal illustration representing dataset memorization",
+  },
+];
+
+function App() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [activeStep, setActiveStep] = useState(0);
+
+  const activeWorkflow = workflowSteps[activeStep];
+  const ActiveIcon = activeWorkflow.icon;
+  const [typedTitle, setTypedTitle] = useState("");
+
+  const stats = useMemo(
+    () => [
+      { value: "3", label: "unlearning modes" },
+      { value: "4", label: "dataset formats" },
+      { value: "0", label: "manual scripts required" },
+    ],
+    [],
+  );
+
+  useLayoutEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const context = gsap.context(() => {
+      const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      intro
+        .from(".brand, .nav-links a", {
+          y: -16,
+          opacity: 0,
+          duration: 0.55,
+          stagger: 0.06,
+        })
+        .from("[data-hero]", {
+          y: 30,
+          opacity: 0,
+          duration: 0.75,
+          stagger: 0.1,
+        }, "-=0.2")
+        .from(".typing-caret", {
+          opacity: 0,
+          duration: 0.35,
+        }, "-=0.55")
+        .from(".hero-art", {
+          y: 34,
+          scale: 0.97,
+          opacity: 0,
+          duration: 0.85,
+        }, "-=0.45")
+        .from(".data-stream-line", {
+          scaleX: 0,
+          transformOrigin: "left center",
+          duration: 0.75,
+          stagger: 0.08,
+        }, "-=0.35")
+        .from(".flow-dot", {
+          scale: 0,
+          opacity: 0,
+          duration: 0.45,
+          stagger: 0.07,
+        }, "-=0.35");
+
+      gsap.to(".hero-art img", {
+        scale: 1.025,
+        duration: 5,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      gsap.to(".orbit-node", {
+        y: -12,
+        duration: 2.4,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.2,
+      });
+
+      gsap.to(".flow-dot", {
+        x: (index: number) => (index % 2 === 0 ? 34 : -28),
+        y: (index: number) => (index % 3 === 0 ? -18 : 18),
+        opacity: 0.25,
+        duration: 1.8,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.15,
+      });
+
+      gsap.to(".scan-line", {
+        xPercent: 145,
+        duration: 2.9,
+        ease: "none",
+        repeat: -1,
+      });
+
+      gsap.to(".workflow-meter-fill", {
+        scaleX: 1,
+        duration: 2.8,
+        ease: "power1.inOut",
+        transformOrigin: "left center",
+        repeat: -1,
+        yoyo: true,
+      });
+
+      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
+        gsap.from(element, {
+          scrollTrigger: {
+            trigger: element,
+            start: "top 84%",
+          },
+          y: 32,
+          opacity: 0,
+          duration: 0.75,
+          ease: "power3.out",
+        });
+
+        const staggerItems = element.querySelectorAll("[data-stagger]");
+        if (staggerItems.length > 0) {
+          gsap.from(staggerItems, {
+            scrollTrigger: {
+              trigger: element,
+              start: "top 78%",
+            },
+            y: 26,
+            opacity: 0,
+            duration: 0.65,
+            ease: "power3.out",
+            stagger: 0.07,
+          });
+        }
+      });
+    }, rootRef);
+
+    return () => context.revert();
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTypedTitle(heroTitle);
+      return;
+    }
+
+    const typeState = { count: 0 };
+    const tween = gsap.to(typeState, {
+      count: heroTitle.length,
+      delay: 0.45,
+      duration: 2.3,
+      ease: "none",
+      snap: { count: 1 },
+      onUpdate: () => {
+        setTypedTitle(heroTitle.slice(0, typeState.count));
+      },
+      onComplete: () => setTypedTitle(heroTitle),
+    });
+
+    return () => {
+      tween.kill();
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const context = gsap.context(() => {
+      gsap.fromTo(
+        ".workflow-panel-content",
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.42, ease: "power3.out", stagger: 0.06 },
+      );
+      gsap.fromTo(
+        ".panel-icon",
+        { rotate: -8, scale: 0.9 },
+        { rotate: 0, scale: 1, duration: 0.42, ease: "back.out(1.7)" },
+      );
+    }, rootRef);
+
+    return () => context.revert();
+  }, [activeStep]);
+
+  const scrollTo = (selector: string) => {
+    document.querySelector(selector)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  return (
+    <div className="site-shell" ref={rootRef}>
+      <header className="nav">
+        <div className="nav-inner">
+          <a className="brand" href="#top" aria-label="Controlled LLM Unlearning home">
+            <span className="brand-mark">F</span>
+            <span>ForgetLLM</span>
+          </a>
+          <nav className="nav-links" aria-label="Primary navigation">
+            <a href="#why">Why</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#compliance">Compliance</a>
+            <a href="#research">Research</a>
+            <a href="#roadmap">Roadmap</a>
+          </nav>
+        </div>
+      </header>
+
+      <main id="top">
+        <section className="hero">
+          <div className="hero-copy">
+            <p className="eyebrow" data-hero>
+              Open-source platform for controlled LLM unlearning
+            </p>
+            <h1 className="hero-title" data-hero aria-label={heroTitle}>
+              <span className="typing-text" aria-hidden="true">
+                {typedTitle || "\u00a0"}
+              </span>
+              <span className="typing-caret" aria-hidden="true" />
+            </h1>
+            <p className="hero-text" data-hero>
+              Guide large language models to selectively remove unwanted knowledge while
+              preserving useful capabilities, without building complex unlearning pipelines from
+              scratch.
+            </p>
+            <div className="hero-actions" data-hero>
+              <button className="primary-button" onClick={() => scrollTo("#workflow")}>
+                <span>Explore workflow</span>
+                <ArrowRight size={18} aria-hidden="true" />
+              </button>
+              <button className="secondary-button" onClick={() => scrollTo("#architecture")}>
+                View architecture
+              </button>
+            </div>
+            <dl className="stats" data-hero>
+              {stats.map((stat) => (
+                <div className="stat" key={stat.label}>
+                  <dt>{stat.value}</dt>
+                  <dd>{stat.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div className="hero-visual" aria-label="Selective unlearning platform illustration">
+            <div className="hero-art">
+              <div className="motion-layer" aria-hidden="true">
+                <span className="data-stream-line line-one" />
+                <span className="data-stream-line line-two" />
+                <span className="data-stream-line line-three" />
+                <span className="flow-dot dot-one" />
+                <span className="flow-dot dot-two" />
+                <span className="flow-dot dot-three" />
+                <span className="flow-dot dot-four" />
+                <span className="scan-line" />
+              </div>
+              <img
+                src={heroIllustration}
+                alt="Minimal illustration of data cards flowing through a model core into a retained checkpoint"
+              />
+              <div className="signal-card signal-card-left orbit-node">
+                <span>Forget set</span>
+                <strong>Private QA pairs</strong>
+              </div>
+              <div className="signal-card signal-card-right orbit-node">
+                <span>Retain set</span>
+                <strong>Utility checks</strong>
+              </div>
+              <div className="checkpoint-tag orbit-node">
+                <Check size={16} aria-hidden="true" />
+                Checkpoint saved
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section why-section" id="why" data-reveal>
+          <div className="section-heading">
+            <p className="eyebrow">Why LLM Unlearning?</p>
+            <h2>Targeted removal without rebuilding the model from zero.</h2>
+          </div>
+          <div className="why-grid">
+            {whyReasons.map((item) => (
+              <article className="problem-card" key={item.title} data-stagger>
+                <div className="problem-media">
+                  <img src={item.image} alt={item.alt} />
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            ))}
+          </div>
+          <p className="wide-copy">
+            Rebuilding an entire model is expensive and often unnecessary. ForgetLLM provides a
+            streamlined path for targeted LLM unlearning so teams can remove specific knowledge
+            while maintaining overall model performance.
+          </p>
+        </section>
+
+        <section className="section workflow-section" id="workflow" data-reveal>
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">How it works</p>
+              <h2>Upload. Configure. Forget.</h2>
+            </div>
+            <p>
+              Each step creates a reproducible unlearning configuration that can be reviewed,
+              relaunched, and extended for research experiments.
+            </p>
+          </div>
+
+          <div className="workflow-layout">
+            <div className="workflow-tabs" role="tablist" aria-label="Unlearning workflow">
+              {workflowSteps.map((step, index) => {
+                const StepIcon = step.icon;
+                return (
+                  <button
+                    className={index === activeStep ? "workflow-tab active" : "workflow-tab"}
+                    key={step.title}
+                    onClick={() => setActiveStep(index)}
+                    role="tab"
+                    aria-selected={index === activeStep}
+                  >
+                    <StepIcon size={20} aria-hidden="true" />
+                    <span>{step.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <article className="workflow-panel" role="tabpanel">
+              <div className="workflow-meter" aria-hidden="true">
+                <span className="workflow-meter-fill" />
+              </div>
+              <div className="panel-topline workflow-panel-content">
+                <div className="panel-icon">
+                  <ActiveIcon size={28} aria-hidden="true" />
+                </div>
+                <p>{activeWorkflow.kicker}</p>
+              </div>
+              <h3 className="workflow-panel-content">{activeWorkflow.title}</h3>
+              <p className="workflow-panel-content">{activeWorkflow.detail}</p>
+              <ul className="pill-list workflow-panel-content">
+                {activeWorkflow.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section className="section compliance-section" id="compliance" data-reveal>
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">Compliance & Responsible AI</p>
+              <h2>Develop AI systems that can adapt when information needs to change.</h2>
+            </div>
+            <p>
+              As AI regulations evolve, organizations need practical ways to manage and update
+              model knowledge responsibly. ForgetLLM supports research and experimentation in
+              targeted machine unlearning, helping teams explore approaches for removing specific
+              information from language models without rebuilding them from scratch.
+            </p>
+          </div>
+
+          <div className="compliance-grid">
+            {complianceTopics.map((topic) => {
+              const TopicIcon = topic.icon;
+              return (
+                <article className="compliance-card" key={topic.title} data-stagger>
+                  <TopicIcon size={24} aria-hidden="true" />
+                  <h3>{topic.title}</h3>
+                  <p>{topic.text}</p>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="responsible-panel" data-stagger>
+            <div>
+              <p className="eyebrow">Responsible AI development</p>
+              <h3>ForgetLLM helps researchers and organizations</h3>
+            </div>
+            <ul>
+              {responsibleAIPoints.map((point) => (
+                <li key={point}>
+                  <CheckCircle2 size={18} aria-hidden="true" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="section" id="research" data-reveal>
+          <div className="section-heading">
+            <p className="eyebrow">Built for research</p>
+            <h2>Experiment faster without giving up control.</h2>
+          </div>
+          <div className="feature-grid">
+            {features.map((feature) => {
+              const FeatureIcon = feature.icon;
+              return (
+                <article className="feature-card" key={feature.title}>
+                  <FeatureIcon size={24} aria-hidden="true" />
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="section architecture-section" id="architecture" data-reveal>
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">Research-oriented architecture</p>
+              <h2>Modular by design, extensible by default.</h2>
+            </div>
+            <p>
+              The platform separates model management, data processing, configuration, orchestration,
+              and algorithms so new research ideas can be swapped in cleanly.
+            </p>
+          </div>
+          <div className="architecture-flow" aria-label="Platform architecture layers">
+            {architecture.map((item) => {
+              const ArchitectureIcon = item.icon;
+              return (
+                <article className="architecture-node" key={item.name}>
+                  <ArchitectureIcon size={24} aria-hidden="true" />
+                  <span>{item.name}</span>
+                </article>
+              );
+            })}
+          </div>
+          <div className="simplicity-band">
+            <h3>Designed for simplicity</h3>
+            <ol>
+              <li>Upload datasets</li>
+              <li>Configure unlearning</li>
+              <li>Review generated configuration</li>
+              <li>Launch experiments</li>
+            </ol>
+          </div>
+        </section>
+
+        <section className="section" data-reveal>
+          <div className="section-heading">
+            <p className="eyebrow">Ideal for</p>
+            <h2>A shared platform for labs, engineers, and organizations.</h2>
+          </div>
+          <div className="role-grid">
+            {roles.map((role) => (
+              <article className="role-card" key={role.name}>
+                <h3>{role.name}</h3>
+                <p>{role.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section roadmap-section" id="roadmap" data-reveal>
+          <div className="section-heading split-heading">
+            <div>
+              <p className="eyebrow">Future roadmap</p>
+              <h2>From experiments to deployment workflows.</h2>
+            </div>
+            <p>
+              Upcoming work focuses on visibility, comparison, queueing, and automatic evaluation
+              of forgetting and utility.
+            </p>
+          </div>
+          <div className="roadmap-list">
+            {roadmap.map((item) => (
+              <article className="roadmap-item" key={item}>
+                <Check size={18} aria-hidden="true" />
+                <span>{item}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="final-cta" data-reveal>
+          <p className="eyebrow">Open research. Practical deployment.</p>
+          <h2>A unified platform for developing, testing, and deploying LLM unlearning workflows.</h2>
+          <button className="primary-button" onClick={() => scrollTo("#workflow")}>
+            <span>Upload. Configure. Forget.</span>
+            <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+export default App;
