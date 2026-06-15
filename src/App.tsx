@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -22,6 +23,7 @@ import type { LucideIcon } from "lucide-react";
 import copyrightIllustration from "./assets/copyright.svg";
 import harmfulKnowledgeIllustration from "./assets/harmful_knowledge.svg";
 import heroIllustration from "./assets/llm-unlearning-hero.png";
+import brandLogo from "./assets/logo.png";
 import memorizationIllustration from "./assets/memorization.svg";
 import outdatedKnowledgeIllustration from "./assets/outdated_knowledge.svg";
 import privateDataIllustration from "./assets/private_data.svg";
@@ -38,6 +40,20 @@ type Feature = {
   title: string;
   text: string;
   icon: LucideIcon;
+};
+
+type FooterGroup = {
+  title: string;
+  links: {
+    label: string;
+    href: string;
+  }[];
+};
+
+type SocialLink = {
+  label: string;
+  href: string;
+  icon: ReactNode;
 };
 
 const workflowSteps: WorkflowStep[] = [
@@ -126,16 +142,16 @@ const architecture = [
 
 const roles = [
   {
-    name: "Researchers",
-    text: "Experiment with new unlearning algorithms and benchmark performance.",
+    name: "Enterprise AI Teams",
+    text: "Operationalize controlled unlearning across model governance workflows.",
   },
   {
     name: "ML Engineers",
     text: "Build production-ready workflows for machine unlearning.",
   },
   {
-    name: "Academic Labs",
-    text: "Run reproducible unlearning experiments across multiple projects.",
+    name: "Compliance Teams",
+    text: "Track privacy, copyright, and risk controls with reproducible unlearning runs.",
   },
   {
     name: "Organizations",
@@ -153,32 +169,115 @@ const roadmap = [
   "Automated utility and forgetting metrics",
 ];
 
+const footerGroups: FooterGroup[] = [
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "#why" },
+      { label: "Privacy Policy", href: "#compliance" },
+      { label: "Terms of Service", href: "#compliance" },
+    ],
+  },
+  {
+    title: "Product",
+    links: [
+      { label: "Introduction", href: "#top" },
+      { label: "ForgetLLM", href: "#enterprise" },
+      { label: "Documentation", href: "#workflow" },
+    ],
+  },
+];
+
+const socialLinks: SocialLink[] = [
+  {
+    label: "X",
+    href: "https://x.com",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 4.5l15 15M19.5 4.5l-15 15" />
+      </svg>
+    ),
+  },
+  {
+    label: "Reddit",
+    href: "https://www.reddit.com",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="13.2" r="5.8" />
+        <path d="M12 7.4l1.5-3.2 3.5.8" />
+        <circle cx="18.3" cy="9.7" r="1.7" />
+        <circle cx="5.7" cy="9.7" r="1.7" />
+        <circle cx="9.7" cy="12.6" r="0.7" />
+        <circle cx="14.3" cy="12.6" r="0.7" />
+        <path d="M9.4 15.5c1.4 1 3.8 1 5.2 0" />
+      </svg>
+    ),
+  },
+  {
+    label: "Hugging Face",
+    href: "https://huggingface.co",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="6.7" />
+        <circle cx="9.3" cy="10.4" r="0.8" />
+        <circle cx="14.7" cy="10.4" r="0.8" />
+        <path d="M8.7 14.3c1.6 1.4 5 1.4 6.6 0" />
+        <path d="M5.1 13.5c-1.2.5-2 1.5-2 2.8 0 1.4 1.1 2.3 2.5 2.2" />
+        <path d="M18.9 13.5c1.2.5 2 1.5 2 2.8 0 1.4-1.1 2.3-2.5 2.2" />
+      </svg>
+    ),
+  },
+  {
+    label: "Discord",
+    href: "https://discord.com",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7.3 8.2c3.1-1.4 6.3-1.4 9.4 0 1.3 2.4 1.8 5.1 1.4 8-2.1 1.6-4.1 2.3-6.1 2.3s-4-.7-6.1-2.3c-.4-2.9.1-5.6 1.4-8Z" />
+        <circle cx="9.7" cy="12.7" r="0.8" />
+        <circle cx="14.3" cy="12.7" r="0.8" />
+        <path d="M9.1 15.5c1.7.8 4.1.8 5.8 0" />
+      </svg>
+    ),
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5.2 9h3.2v9.6H5.2z" />
+        <path d="M6.8 5.1a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Z" />
+        <path d="M10.4 9h3.1v1.3c.6-.9 1.6-1.5 3.1-1.5 2.2 0 3.8 1.4 3.8 4.4v5.4h-3.2v-5c0-1.4-.6-2.1-1.7-2.1s-1.9.8-1.9 2.1v5h-3.2z" />
+      </svg>
+    ),
+  },
+];
+
 const complianceTopics = [
   {
     title: "Privacy & Data Removal",
     text:
-      "Regulations such as the GDPR highlight the importance of data removal and user privacy. ForgetLLM enables controlled unlearning workflows that can support investigations into how trained models may be updated when information needs to be removed.",
+      "Support GDPR-aligned removal investigations and data subject workflows with controlled unlearning runs.",
     icon: ShieldCheck,
   },
   {
     title: "Copyright & Data Governance",
     text:
-      "Source data may later become subject to licensing changes, ownership disputes, or policy updates. ForgetLLM provides a framework for evaluating selective knowledge removal strategies and their impact on model performance.",
+      "Assess selective removal when licenses, ownership, or policy requirements change across enterprise data assets.",
     icon: Database,
   },
   {
     title: "Responsible AI Development",
     text:
-      "ForgetLLM helps researchers and organizations study targeted knowledge removal, evaluate utility-forgetting trade-offs, build reproducible experiments, and support AI governance efforts.",
+      "Map unlearning evidence to the AI Act, ISO/IEC 42001, and NIST AI RMF governance practices.",
     icon: FlaskConical,
   },
 ];
 
 const responsibleAIPoints = [
-  "Study targeted knowledge removal",
+  "Operationalize targeted knowledge removal",
   "Evaluate utility-forgetting trade-offs",
-  "Build reproducible unlearning experiments",
-  "Support AI governance and risk management efforts",
+  "Maintain reproducible governance evidence",
+  "Align with AI Act, ISO/IEC 42001, and NIST AI RMF",
 ];
 
 const heroTitle = "Forget what doesn't matter. Keep what does.";
@@ -244,11 +343,9 @@ function App() {
       const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
 
       intro
-        .from(".brand, .nav-links a", {
-          y: -16,
+        .from(".nav", {
           opacity: 0,
-          duration: 0.55,
-          stagger: 0.06,
+          duration: 0.35,
         })
         .from("[data-hero]", {
           y: 30,
@@ -408,15 +505,17 @@ function App() {
     <div className="site-shell" ref={rootRef}>
       <header className="nav">
         <div className="nav-inner">
-          <a className="brand" href="#top" aria-label="Controlled LLM Unlearning home">
-            <span className="brand-mark">F</span>
+          <a className="brand" href="#top" aria-label="ForgetLLM home">
+            <span className="brand-mark" aria-hidden="true">
+              <img src={brandLogo} alt="" />
+            </span>
             <span>ForgetLLM</span>
           </a>
           <nav className="nav-links" aria-label="Primary navigation">
             <a href="#why">Why</a>
             <a href="#workflow">Workflow</a>
             <a href="#compliance">Compliance</a>
-            <a href="#research">Research</a>
+            <a href="#enterprise">Enterprise</a>
             <a href="#roadmap">Roadmap</a>
           </nav>
         </div>
@@ -521,7 +620,7 @@ function App() {
             </div>
             <p>
               Each step creates a reproducible unlearning configuration that can be reviewed,
-              relaunched, and extended for research experiments.
+              relaunched, and extended for enterprise workflows.
             </p>
           </div>
 
@@ -566,17 +665,11 @@ function App() {
         </section>
 
         <section className="section compliance-section" id="compliance" data-reveal>
-          <div className="section-heading split-heading">
+          <div className="section-heading compliance-heading">
             <div>
               <p className="eyebrow">Compliance & Responsible AI</p>
-              <h2>Develop AI systems that can adapt when information needs to change.</h2>
+              <h2>Develop Adaptable AI systems</h2>
             </div>
-            <p>
-              As AI regulations evolve, organizations need practical ways to manage and update
-              model knowledge responsibly. ForgetLLM supports research and experimentation in
-              targeted machine unlearning, helping teams explore approaches for removing specific
-              information from language models without rebuilding them from scratch.
-            </p>
           </div>
 
           <div className="compliance-grid">
@@ -595,7 +688,7 @@ function App() {
           <div className="responsible-panel" data-stagger>
             <div>
               <p className="eyebrow">Responsible AI development</p>
-              <h3>ForgetLLM helps researchers and organizations</h3>
+              <h3>ForgetLLM helps enterprise teams</h3>
             </div>
             <ul>
               {responsibleAIPoints.map((point) => (
@@ -608,10 +701,10 @@ function App() {
           </div>
         </section>
 
-        <section className="section" id="research" data-reveal>
+        <section className="section" id="enterprise" data-reveal>
           <div className="section-heading">
-            <p className="eyebrow">Built for research</p>
-            <h2>Experiment faster without giving up control.</h2>
+            <p className="eyebrow">Built for enterprise</p>
+            <h2>Operationalize unlearning without giving up control.</h2>
           </div>
           <div className="feature-grid">
             {features.map((feature) => {
@@ -630,12 +723,12 @@ function App() {
         <section className="section architecture-section" id="architecture" data-reveal>
           <div className="section-heading split-heading">
             <div>
-              <p className="eyebrow">Research-oriented architecture</p>
+              <p className="eyebrow">Enterprise-oriented architecture</p>
               <h2>Modular by design, extensible by default.</h2>
             </div>
             <p>
               The platform separates model management, data processing, configuration, orchestration,
-              and algorithms so new research ideas can be swapped in cleanly.
+              and algorithms so policies, evaluations, and workflows can be updated cleanly.
             </p>
           </div>
           <div className="architecture-flow" aria-label="Platform architecture layers">
@@ -650,12 +743,12 @@ function App() {
             })}
           </div>
           <div className="simplicity-band">
-            <h3>Designed for simplicity</h3>
+            <h3>Designed for enterprise simplicity</h3>
             <ol>
               <li>Upload datasets</li>
               <li>Configure unlearning</li>
               <li>Review generated configuration</li>
-              <li>Launch experiments</li>
+              <li>Launch unlearning runs</li>
             </ol>
           </div>
         </section>
@@ -663,7 +756,7 @@ function App() {
         <section className="section" data-reveal>
           <div className="section-heading">
             <p className="eyebrow">Ideal for</p>
-            <h2>A shared platform for labs, engineers, and organizations.</h2>
+            <h2>A shared platform for governance teams, engineers, and organizations.</h2>
           </div>
           <div className="role-grid">
             {roles.map((role) => (
@@ -697,7 +790,7 @@ function App() {
         </section>
 
         <section className="final-cta" data-reveal>
-          <p className="eyebrow">Open research. Practical deployment.</p>
+          <p className="eyebrow">Enterprise governance. Practical deployment.</p>
           <h2>A unified platform for developing, testing, and deploying LLM unlearning workflows.</h2>
           <button className="primary-button" onClick={() => scrollTo("#workflow")}>
             <span>Upload. Configure. Forget.</span>
@@ -705,6 +798,46 @@ function App() {
           </button>
         </section>
       </main>
+
+      <footer className="site-footer">
+        <div className="footer-inner">
+          <div className="footer-grid">
+            {footerGroups.map((group) => (
+              <section className="footer-column" key={group.title} aria-labelledby={`${group.title}-footer`}>
+                <h2 id={`${group.title}-footer`}>{group.title}</h2>
+                <ul>
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <a href={link.href}>{link.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+
+            <section className="footer-column" aria-labelledby="community-footer">
+              <h2 id="community-footer">Community</h2>
+              <div className="social-links">
+                {socialLinks.map((link) => (
+                  <a
+                    href={link.href}
+                    key={link.label}
+                    aria-label={link.label}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {link.icon}
+                  </a>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="footer-bottom">
+            <p>@2026 ForgetLLM. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
